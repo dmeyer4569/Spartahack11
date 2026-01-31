@@ -1,0 +1,45 @@
+# --- Dependencies & Environments ---
+node_modules/
+bun.lockb
+venv/
+.venv/
+env/
+ENV/
+target/
+
+# --- Build & Distribution ---
+dist/
+build/
+out/
+.output/
+*.egg-info/
+
+# --- Sensitive Information (Environment Variables) ---
+.env
+.env.*
+!.env.example
+
+# --- Logs, Tests, & Coverage ---
+*.log
+npm-debug.log*
+bun.log*
+coverage/
+htmlcov/
+.pytest_cache/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# --- Editor & OS Specific ---
+.vscode/
+.idea/
+.ipynb_checkpoints
+.DS_Store
+Thumbs.db
+*.swp
+
+# --- Python Bytecode (Optional if not using Python) ---
+__pycache__/
+*.py[cod]
+*$py.class
