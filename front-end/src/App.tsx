@@ -3,6 +3,7 @@ import './App.css'
 
 // My component imports
 import CardOrganizer from './CardOrganizer'
+import GeminiRecipe  from './GeminiRecipe'
 
 // My type imports
 import type { PantryItem } from './types/item'
@@ -38,7 +39,8 @@ function App() {
           name: `this city ${i}`, 
           image: url, 
           expirationDate: "2026-01-31",
-          locationId: i % 3
+          locationId: i % 3,
+          quantity: 10
         });
       }
 
@@ -115,40 +117,41 @@ function App() {
   const filteredItems = items.filter(item => selectedLocations.includes(item.locationId));
 
   return (
-    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
-      <div className="py-12 px-4">
-        <div className="max-w-6xl mx-auto px-4">
-          <header className="max-w-6xl mx-auto mb-12">
-            <h1 className="text-4xl font-black text-gray-900">Pantry Tracker</h1>
-            <p className="text-gray-500 mt-2">Manage your inventory and expiration dates.</p>
-          </header>
-          <main className="space-y-16">
-            <div className="mb-6">
+    <div className="min-h-screen bg-gray-50 text-slate-900">
+      <div className="max-w-7xl mx-auto py-12 px-4">
+        <header className="mb-12 border-b border-slate-200 pb-8">
+          <h1 className="text-5xl font-black text-gray-900">Pantry <span className="text-blue-600">Tracker</span></h1>
+          <p className="text-gray-500 mt-3 text-lg">Manage your inventory and expiration dates.</p>
+        </header>
+        <main className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-start">
+          <div className="className lg:col-span-3 space-y-12">
+            <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
               <label className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 block">
-                Filter by Storage Location
+                Storage Location
               </label>
-              <div className="flex flex-wrap gap-2 mb-8">
-                {locations.map((location) => {
-                  const isActive = selectedLocations.includes(location.id);
-                  return (
-                    <button
-                      key={location.id}
-                      onClick={() => handleToggle(location.id)}
-                      className={`px-4 py-2 rounded-xl border transition-all ${
-                        isActive
-                        ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                        : "bg-gray-800 text-gray-100 border-gray-700 hover:bg-gray-700"
-                      }`}
-                    >
-                      {location.location}
-                    </button>
-                  );
-                })}
+              <div className="flex flex-wrap gap-3">
+                {locations.map((loc) => (
+                  <button
+                    key={loc.id}
+                    onClick={() => handleToggle(loc.id)}
+                    className={`px-5 py-2.5 rounded-xl font-medium transition-all ${
+                      selectedLocations.includes(loc.id)
+                      ? "bg-blue-600 text-white border-blue-600 shadow-lg"
+                      : "bg-gray-800 text-slate-200 hover:bg-slate-600"
+                    }`}
+                  >
+                    {loc.location}
+                  </button>
+                ))}
               </div>
-            </div>
+            </section>
             <CardOrganizer items={filteredItems} priorityExpiration={priorityExpiration} locations={locations} />
-          </main>
-        </div>
+          </div>
+
+          <aside className="lg:sticky lg:col-span-2 lg:top-2">
+            <GeminiRecipe />
+          </aside>
+        </main>
       </div>
     </div>
   )
