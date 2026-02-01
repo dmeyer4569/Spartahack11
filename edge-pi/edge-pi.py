@@ -36,9 +36,8 @@ os.makedirs(Audio_Folder, exist_ok=True)
 
 audio_queue = queue.Queue()
 
-OBJECT_TOO_CLOSE_DISTANCE = 15
-OBJECT_PRESENT_DISTANCE = 35
-OBJECT_GONE_DISTANCE = 40
+OBJECT_PRESENT_DISTANCE = 30
+OBJECT_GONE_DISTANCE = 35
 PICTURE_COOLDOWN = 1.0
 MIN_RECORD_SEC = 10  # used as the post-buffer for audio
 
@@ -151,10 +150,10 @@ def start_logging():
                 print(f"Distance: {dist} cm")
 
             if dist is not None:
-                if not object_present and OBJECT_TOO_CLOSE_DISTANCE < dist <= OBJECT_PRESENT_DISTANCE:
+                if not object_present and dist <= OBJECT_PRESENT_DISTANCE:
                     object_present = True
                     picture_taken = False  # reset for new object
-                elif object_present and (dist >= OBJECT_GONE_DISTANCE or dist <= OBJECT_TOO_CLOSE_DISTANCE):
+                elif object_present and dist >= OBJECT_GONE_DISTANCE:
                     object_present = False
                     picture_taken = False  # ready for next object
 
@@ -169,7 +168,6 @@ def start_logging():
             if pir:
                 print("PIR DETECTED")
                 last_motion_time = now
-
                 if not motion_active:
                     # start audio
                     timestamp = now.strftime("%Y%m%d_%H%M%S")
