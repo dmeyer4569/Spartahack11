@@ -29,15 +29,13 @@ class PantryOut(BaseModel):
     class Config:
         orm_mode = True
 
-@main_router.get("/locations", tags=["Select"])
+@main_router.get("/locations", response_model=List[LocationOut],tags=["Select"])
 async def get_locations(db: AsyncSession = Depends(get_db)):
 
     raw_result = await db.scalars(
         select(Location)
     )
-    location_data = [{"id": row.id, "location": row.location} for row in raw_result]
-
-    return location_data
+    return raw_result
 
 @main_router.get("/items", response_model=List[PantryOut], tags=["Select"])
 async def get_items(db: AsyncSession = Depends(get_db)):
@@ -45,3 +43,4 @@ async def get_items(db: AsyncSession = Depends(get_db)):
         select(Pantry)
     )
     return raw_result
+
