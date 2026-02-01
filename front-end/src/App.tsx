@@ -24,10 +24,10 @@ function App() {
   useEffect(() => {
     let hasLoaded = false;
 
-    const fetchImage = async () => {
+    const fetchItem = async () => {
       const newItems: PantryItems[] = [];
 
-      const response = await fetch(`http://localhost:8000/api/items`, {
+      const response = await fetch(`http://10.249.231.63:8001/api/items`, {
         method: 'GET'
       });
 
@@ -40,7 +40,7 @@ function App() {
 
     const getLocations = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/locations`, {
+        const response = await fetch(`http://10.249.231.63:8001/api/locations`, {
           method: 'GET'
         });
         const data = await response.json();
@@ -51,11 +51,17 @@ function App() {
       }
     }
     
-    fetchImage();
+    fetchItem();
     getLocations();
+
+    const interval = setInterval(() => {
+      fetchItem();
+      getLocations();
+    }, 10_000);
 
     return () => {
       hasLoaded = true;
+      clearInterval(interval);
     };
   }, []);
 

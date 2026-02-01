@@ -4,5 +4,5 @@ export interface PantryItem {
   expire: string;  
   quantity: number;
   img_path: string; // URL
-  location_id: id;
+  location_id: number;
 }
