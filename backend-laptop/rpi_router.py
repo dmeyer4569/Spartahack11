@@ -6,7 +6,7 @@ from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from models import Location, Pantry
 from typing import List
-from datetime import date
+from datetime import datetime, date
 import os
 from stt import stt
 from gemini_api import gemini_talk_with_me
@@ -77,19 +77,20 @@ async def new_locations(
     print(f"AudioFile saved {audio_file.filename}")
 
     result = stt(filepath_audio)
-
+    print(f"{result=}")
     gemini_ans = gemini_talk_with_me(result)
 
     json_result = json.loads(gemini_ans)
-    print(repr(gemini_ans))
+    print(f"{gemini_ans=}")
 
     img_tracker = 0
-    print(json_result)
+    print(f"{json_result=}")
     for item in json_result:
         raw_location_result = await db.execute(
             select(Location)
             .where(Location.location == item["location"])
         )
+
         location_in_db = raw_location_result.scalar_one_or_none()
 
         if location_in_db is None:
@@ -99,12 +100,17 @@ async def new_locations(
             db.add(new_location)
             await db.commit()
             await db.refresh(new_location)
+            location_in_db = new_location
+
         item_image = img_order[img_tracker]
-        filepath = os.path.join(upload_img_dir, item_image)
+        filepath = item_image
+
+        print(f"the item image we are committing are {filepath=}")
+        item_expiry = datetime.strptime(item["expires"], "%Y-%m-%d").date()
 
         new_item = Pantry(
             name=item["item"],
-            expire=item["expires"],
+            expire=item_expiry,
             quantity=item["quantity"],
             img_path=filepath,
             location=location_in_db

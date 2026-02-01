@@ -46,3 +46,8 @@ def stt(AudioFile):
     transcript = " ".join(full_text)
 
     return(transcript)
+
+
+if __name__ == "__main__":
+    result = stt("./uploads/audio/20260201_143715.wav")
+    print(f"{result=}")

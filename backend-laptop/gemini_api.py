@@ -22,12 +22,13 @@ def gemini_talk_with_me(transcribed_text):
         Do not include explanation.
         Do not include markdown.
         Do not include text before or after the JSON.
+        Please ensure the date is YYYY-MM-DD
 
         Each item must follow this format:
         {{
         "item": string,
         "quantity": number or null,
-        "expires": string,
+        "expires": Date,
         "location": string
         }}
 
