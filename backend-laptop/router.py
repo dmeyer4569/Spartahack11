@@ -11,10 +11,18 @@ from datetime import date
 
 main_router = APIRouter()
 
+class LocationOut(BaseModel):
+    id: int
+    location: str
+
+    class Config:
+        orm_mode = True
+
 class PantryOut(BaseModel):
     id: int
     name: str
     expire: date
+    quantity: int
     img_path: str
     location_id: int
 
