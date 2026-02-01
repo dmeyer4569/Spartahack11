@@ -51,17 +51,38 @@ async def get_items(db: AsyncSession = Depends(get_db)):
     return raw_result
 
 @main_router.delete("/remove/{item_id}", tags=["Delete"])
+@main_router.delete("/remove/{item_id}", tags=["Delete"])
 async def del_item(item_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Pantry).where(Pantry.id == item_id))
+
+    # get item
+    result = await db.execute(
+        select(Pantry).where(Pantry.id == item_id)
+    )
     item = result.scalars().first()
 
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
-    # delete item
-    await db.delete(item)
+    location_id = item.location_id  # temp save
 
-    # commit 
+    # rm -r item :p
+    await db.delete(item)
     await db.commit()
+
+    # heck if location ahs item, if not deleet
+    remaining = await db.execute(
+        select(Pantry).where(Pantry.location_id == location_id)
+    )
+    remaining_items = remaining.scalars().first()
+
+    # location = 0, delete
+    if not remaining_items:
+        loc_result = await db.execute(
+            select(Location).where(Location.id == location_id)
+        )
+        location = loc_result.scalars().first()
+        if location:
+            await db.delete(location)
+            await db.commit()
 
     return {"detail": f"Item with id {item_id} deleted successfully"}
