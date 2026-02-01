@@ -110,8 +110,6 @@ function App() {
     } else {
       setSelectedLocations([...selectedLocations, locationId]);
     }
-
-    console.log(selectedLocations);
   };
 
   const filteredItems = items.filter(item => selectedLocations.includes(item.locationId));
