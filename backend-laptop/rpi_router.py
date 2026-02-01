@@ -10,6 +10,7 @@ from datetime import date
 import os
 from stt import stt
 from gemini_api import gemini_talk_with_me
+import json
 
 rpi_router = APIRouter()
 
@@ -38,13 +39,35 @@ async def new_locations(
     os.makedirs(upload_audio_dir, exist_ok=True)
     os.makedirs(upload_img_dir, exist_ok=True)
 
+    img_order = []
+
     for image in images:
         filepath = os.path.join(upload_img_dir, image.filename)
 
         contents = await image.read()
         with open(filepath, "wb") as f:
             f.write(contents)
+
         print(f"Image saved {image.filename}")
+
+        try:
+            rank = int(image.filename.split("_", 1)[1].split(".")[0])
+        except (IndexError, ValueError):
+            print(f"Skipping {image.filename}, bad format")
+            continue
+
+        inserted = False
+        for i, existing in enumerate(img_order):
+            existing_rank = int(existing.split("_", 1)[1].split(".")[0])
+            if rank < existing_rank:
+                img_order.insert(i, image.filename)
+                inserted = True
+                break
+
+        if not inserted:
+            img_order.append(image.filename)
+    print(img_order)
+
 
     filepath_audio = os.path.join(upload_audio_dir, audio_file.filename)
 
@@ -55,27 +78,41 @@ async def new_locations(
 
     result = stt(filepath_audio)
 
-    json_result = gemini_talk_with_me(result)
+    gemini_ans = gemini_talk_with_me(result)
 
-    raw_location_result = await db.execute(
-        select(Location)
-        .where(Location.id == json_result.location)
-    )
-    location_in_db = raw_location_result.scalar_one_or_none()
+    json_result = json.loads(gemini_ans)
+    print(repr(gemini_ans))
 
-    if location_in_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Location not found")
-    
+    img_tracker = 0
+    print(json_result)
     for item in json_result:
+        raw_location_result = await db.execute(
+            select(Location)
+            .where(Location.location == item["location"])
+        )
+        location_in_db = raw_location_result.scalar_one_or_none()
+
+        if location_in_db is None:
+            new_location = Location(
+            location=item["location"]
+            )
+            db.add(new_location)
+            await db.commit()
+            await db.refresh(new_location)
+        item_image = img_order[img_tracker]
+        filepath = os.path.join(upload_img_dir, item_image)
+
         new_item = Pantry(
-            name=json_result["name"],
-            expire=json_result["expires"],
-            quantity=json_result["quantity"],
-            img_path="temp",
+            name=item["item"],
+            expire=item["expires"],
+            quantity=item["quantity"],
+            img_path=filepath,
             location=location_in_db
         )
         db.add(new_item)
         await db.commit()
         await db.refresh(new_item)
+        img_tracker+=1
 
     return HTTPException(status_code=status.HTTP_200_OK, detail="Successfully uploaded everything"), json_result
+

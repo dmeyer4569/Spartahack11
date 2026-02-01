@@ -52,3 +52,4 @@ vosk-model-en-us-0.22/
 uploads/
 *.wav
 *.jpg
+static/

@@ -15,7 +15,25 @@ def gemini_talk_with_me(transcribed_text):
 
     # Prompt asking for structured JSON
     prompt = (
-        "Summarize this transcribed text such that each item becomes an object and return it as a json. Failure is punished, translate pantry six or any pantry (number) to pantry 6 "
+        """
+        Extract pantry items from the following transcription.
+
+        Return ONLY valid JSON.
+        Do not include explanation.
+        Do not include markdown.
+        Do not include text before or after the JSON.
+
+        Each item must follow this format:
+        {{
+        "item": string,
+        "quantity": number or null,
+        "expires": string,
+        "location": string
+        }}
+
+        Transcription:
+        {transcribed_text}
+        """
         + transcribed_text
     )
 
