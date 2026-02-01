@@ -27,48 +27,23 @@ function App() {
     const fetchImage = async () => {
       const newItems: PantryItems[] = [];
 
-      const response = await fetch(`https://picsum.photos/id/238/200/300`, {
+      const response = await fetch(`http://localhost:8000/api/items`, {
         method: 'GET'
       });
 
-      let unique = Date.now();
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-     
-      for (let i = 0; i < 10; i++) {
-        newItems.push({
-          id: unique + i, 
-          name: `${foods[i % 6]}`, 
-          image: url, 
-          expirationDate: `2026-02-0${((i%4)+3)}`,
-          locationId: i % 3,
-          quantity: 10
-        });
-      }
+      const data = await response.json();
 
       if (!hasLoaded) {
-        setItems(newItems);
+        setItems(data);
       }
     }
 
     const getLocations = async () => {
       try {
-        const response = null/* fetch(location api) */;
-        const data = [
-          {
-            location: "Pantry",
-            id: 0
-          },
-          {
-            location: "Fridge",
-            id: 1
-          },
-          {
-            location: "Drawer",
-            id: 2
-          },
-        ];
-
+        const response = await fetch(`http://localhost:8000/api/locations`, {
+          method: 'GET'
+        });
+        const data = await response.json();
         setLocations(data);
         setSelectedLocations(data.map((location) => { return location.id; }));
       } catch (error) {
@@ -84,6 +59,7 @@ function App() {
     };
   }, []);
 
+  console.log(items);
 
   const priorityExpiration: PriorityExpiration = {
     [Priority.Max]: {
@@ -98,7 +74,7 @@ function App() {
     },
     [Priority.Medium]: {
       deadline: getDaysUntil(7),
-      label: "Expires in a Week",
+      label: "Expires in less than a Week",
       colorClass: "bg-orange-500",
     },
     [Priority.Low]: {
@@ -116,7 +92,7 @@ function App() {
     }
   };
 
-  const filteredItems = items.filter(item => selectedLocations.includes(item.locationId));
+  const filteredItems = items.filter(item => selectedLocations.includes(item.location_id));
 
   return (
     <div className="min-h-screen bg-gray-50 text-slate-900">
@@ -153,7 +129,7 @@ function App() {
           <aside className="lg:sticky lg:col-span-2 lg:top-2">
             <GeminiRecipe 
               items={filteredItems
-                      .filter(item => item.expirationDate > priorityExpiration[Priority.Max].deadline) 
+                      .filter(item => item.expire > priorityExpiration[Priority.Max].deadline) 
                       .slice(0, 5)
                     }
             />

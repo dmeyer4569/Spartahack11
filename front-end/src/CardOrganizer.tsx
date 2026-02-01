@@ -15,7 +15,7 @@ interface CardOrganizerProps {
 
 export default function CardOrganizer({items, priorityExpiration, locations}: CardOrganizerProps) {
   const groupedItems = items.reduce((acc, item) => {
-    const date = item.expirationDate;
+    const date = item.expire;
     if (date <= priorityExpiration[Priority.Max].deadline) {
       acc.max.push(item);
     } else if (date <= priorityExpiration[Priority.High].deadline) {

@@ -25,7 +25,7 @@ export default function CardSection({items, expiryInfo, locations}: CardSectionP
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {items.length > 0 
           ? items.map(item => {
-              const loc = locations.find(l => l.id === item.locationId)?.location; 
+              const loc = locations.find(l => l.id === item.location_id)?.location; 
 
               return (
                 <Card key={item.id} item={item} locationName={loc}/>

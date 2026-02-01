@@ -1,8 +1,8 @@
 export interface PantryItem {
   id: number; // Unique identifier from your DB
   name: string;
+  expire: string;  
   quantity: number;
-  locationId: id;
-  image: string; // URL
-  expirationDate: string;  
+  img_path: string; // URL
+  location_id: id;
 }

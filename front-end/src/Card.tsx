@@ -6,11 +6,12 @@ interface CardProps {
 }
 
 function Card({item, locationName}: CardProps) {
+  console.log(item)
   return (
     <div className="group rounded-2xl bg-white shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       <div className="h-48 w-full overflow-hidden relative">
         <img 
-          src={item.image}
+          src={`http://127.0.0.1:8000/static/${item.img_path}`}
           alt={item.name}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-100"
         />
@@ -39,7 +40,7 @@ function Card({item, locationName}: CardProps) {
           <div className="flex items-center justify-between mt-4">
             <span className="text-xs font-semibold text-gray-400 uppercase">Expires</span>
             <span className="text-sm font-bold text-red-500 bg-red-50 px-3 py-1 rounded-full">
-              {item.expirationDate}
+              {item.expire}
             </span>
         </div>
       </div>

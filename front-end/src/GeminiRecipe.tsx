@@ -24,6 +24,8 @@ export default function GeminiRecipe({items}: GeminiRecipeProps) {
       .map(item => `- ${item.name} (Expires: ${item.expirationDate})`)
       .join("\n");
 
+    console.log(ingredientList);
+
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
