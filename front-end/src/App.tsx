@@ -35,7 +35,7 @@ function App() {
           id: unique + i, 
           name: "this city", 
           image: url, 
-          date: "2026-01-31"
+          expirationDate: "2026-01-31"
         });
       }
 
@@ -76,9 +76,19 @@ function App() {
   };
 
   return (
-    <>
-      <CardOrganizer items={items} priorityExpiration={priorityExpiration} />
-    </>
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+      <div className="py-12 px-4">
+        <div className="max-w-6xl mx-auto px-4">
+          <header className="max-w-6xl mx-auto mb-12">
+            <h1 className="text-4xl font-black text-gray-900">Pantry Tracker</h1>
+            <p className="text-gray-500 mt-2">Manage your inventory and expiration dates.</p>
+          </header>
+          <main className="space-y-16">
+            <CardOrganizer items={items} priorityExpiration={priorityExpiration} />
+          </main>
+        </div>
+      </div>
+    </div>
   )
 }
 

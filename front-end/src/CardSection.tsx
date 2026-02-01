@@ -11,14 +11,21 @@ interface CardSectionProps {
 
 export default function CardSection({items, expiryInfo}: CardSectionProps) {
   return (
-    <>
-      <h2> {expiryInfo.label} </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
+    <section>
+      <div className="flex items-center gap-4 mb-6 border-b border-gray-200 pb-4"> 
+        <div className={`w-3 h-3 rounded-full ${expiryInfo.colorClass}`} />
+        <h2 className="text-xl font-bold text-gray-800 uppercase tracking-wide">
+          {expiryInfo.label}
+        </h2>
+        <span className="ml-auto text-sm text-gray-400 font-medium">{items.length} Items</span>
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {items.length > 0 
           ? items.map(item => <Card key={item.id} item={item} />)
-          : <p> loading items </p>
+          : <div className="col-span-full py-10 text-center bg-gray-100 rounded-xl text-gray-400 italic">No items in this category</div>
         }
       </div>
-    </>
+    </section>
   );
 }
