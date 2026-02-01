@@ -37,6 +37,8 @@ export default function GeminiRecipe({items}: GeminiRecipeProps) {
       ${ingredientList}
 
       Provide the recipe name, a brief description, and instructions.
+
+      Please also provide an estimate of the amount of money that you saved by using these ingredients.
     `;
 
     const result = await model.generateContent(prompt);
