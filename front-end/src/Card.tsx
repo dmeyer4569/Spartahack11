@@ -2,9 +2,10 @@ import type { PantryItem } from './types/item'
 
 interface CardProps {
   item: PantryItem;
+  locationName?: string;
 }
 
-function Card({item}: CardProps) {
+function Card({item, locationName}: CardProps) {
   return (
     <div className="group rounded-2xl bg-white shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       <div className="h-48 w-full overflow-hidden relative">
@@ -14,6 +15,14 @@ function Card({item}: CardProps) {
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-100"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+
+        {locationName &&
+          <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg shadow-sm flex items-center justify-center">
+            <span className="text-[12px] font-bold text-gray-700 uppercase leading-none">
+              {locationName}
+            </span>
+          </div>
+        }
       </div>
 
       <div className="p-5">
