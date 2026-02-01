@@ -29,6 +29,12 @@ class PantryOut(BaseModel):
     class Config:
         orm_mode = True
 
+class DeleteItem(BaseModel):
+    id: int
+
+    class Config:
+        orm_mode = True
+
 @main_router.get("/locations", response_model=List[LocationOut],tags=["Select"])
 async def get_locations(db: AsyncSession = Depends(get_db)):
 
@@ -44,3 +50,18 @@ async def get_items(db: AsyncSession = Depends(get_db)):
     )
     return raw_result
 
+@main_router.delete("/remove/{item_id}", tags=["Delete"])
+async def del_item(item_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Pantry).where(Pantry.id == item_id))
+    item = result.scalars().first()
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    # delete item
+    await db.delete(item)
+
+    # commit 
+    await db.commit()
+
+    return {"detail": f"Item with id {item_id} deleted successfully"}
