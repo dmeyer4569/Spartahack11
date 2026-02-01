@@ -11,6 +11,7 @@ class Pantry(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255))
     expire: Mapped[Date] = mapped_column(Date)
+    quantity: Mapped[int] = mapped_column(Integer)
     img_path: Mapped[str] = mapped_column(Text)
     
     location_id: Mapped[int] = mapped_column(ForeignKey("location.id"))

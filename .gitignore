@@ -6,6 +6,7 @@ venv/
 env/
 ENV/
 target/
+*.sqlite
 
 # --- Build & Distribution ---
 dist/
