@@ -34,4 +34,4 @@ class Location(Base):
         cascade="all, delete-orphan"
     )
     def __repr__(self):
-        return f"Location(id={self.id!r}, location={self.location!r})"
+        return f"id={self.id}, location={self.location}"
