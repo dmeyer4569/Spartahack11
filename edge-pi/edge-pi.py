@@ -1,38 +1,39 @@
 #!/usr/bin/env python3
-import RPi.GPIO as GPIO
+
+# Generic Python Imports
 import time
-import cv2
 import os
+import shutil
+import sys
 from datetime import datetime
 import threading
+import numpy as np
+
+# Accessing the GPIO
+import RPi.GPIO as GPIO
+
+# Accessing the Webcam
+import cv2
+
+# Accessing the Microphone
 import sounddevice as sd
 import queue
 import wave
-import numpy as np
 
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BCM)
+# Submit a POST request
+import requests
+from contextlib import ExitStack
 
+# GPIO Constants
 GPIO_PIR = 5
 WHITE_LED = 12
-
 TRIG_PIN = 6
 ECHO_PIN = 16
 GREEN_LED = 24
 RED_LED = 23
 
-# Setup
-GPIO.setup(WHITE_LED, GPIO.OUT)
-GPIO.setup(GPIO_PIR, GPIO.IN)
-GPIO.setup(TRIG_PIN, GPIO.OUT)
-GPIO.setup(ECHO_PIN, GPIO.IN)
-GPIO.setup(GREEN_LED, GPIO.OUT)
-GPIO.setup(RED_LED, GPIO.OUT)
-
-Image_Folder = "images"
-Audio_Folder = "audio"
-os.makedirs(Image_Folder, exist_ok=True)
-os.makedirs(Audio_Folder, exist_ok=True)
+IMAGE_FOLDER = "images"
+AUDIO_FOLDER = "audio"
 
 audio_queue = queue.Queue()
 
@@ -104,23 +105,41 @@ def take_picture(cap):
     ret, frame = cap.read()
     if not ret:
         print("Failed to capture image")
-        return False
+        return None
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    path = os.path.join(Image_Folder, f"{timestamp}.jpg")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    path = os.path.join(IMAGE_FOLDER, f"{timestamp}.jpg")
     cv2.imwrite(path, frame)
     print(f"Image saved: {path}")
     GPIO.output(WHITE_LED, False)
-    return True
+    return path
 
-Previous_State = 0
 def motion_status():
-    global Previous_State
     current_state = GPIO.input(GPIO_PIR)
-    Previous_State = current_state
     return current_state == 1
 
-def start_logging():
+def sync_with_backend(ip: str, images_written: list[str], audio_path: str) -> None:
+    url = f"http://{ip}:8000/rpi_upload"
+
+    with ExitStack() as stack:
+        files = [
+            ("images", (path, stack.enter_context(open(path, "rb")), "image/jpeg"))
+            for path in images_written
+        ]
+
+        audio_f = stack.enter_context(open(audio_path, "rb"))
+        files.append(("audio_file", (audio_path, audio_f, "audio/wav")))
+
+        response = requests.post(url, files=files)
+
+def clear_folder(folder: str) -> None:
+    if os.path.exists(folder):
+        shutil.rmtree(folder)
+
+    os.makedirs(folder)
+
+
+def start_logging(ip: str) -> None:
     cap = cv2.VideoCapture("/dev/video0", cv2.CAP_V4L2)
     cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
@@ -137,6 +156,9 @@ def start_logging():
 
     object_present = False
     picture_taken = False
+
+    images_written = []
+    audio_file = ""
 
     try:
         while True:
@@ -161,9 +183,11 @@ def start_logging():
                 now_ts = time.time()
                 if (last_picture_time is None) or ((now_ts - last_picture_time) >= PICTURE_COOLDOWN):
                     print("Object entered range -> taking picture")
-                    if take_picture(cap):
+                    path = take_picture(cap)
+                    if path:
                         last_picture_time = now_ts
                         picture_taken = True
+                        images_written.append(path)
 
             if pir:
                 print("PIR DETECTED")
@@ -171,7 +195,7 @@ def start_logging():
                 if not motion_active:
                     # start audio
                     timestamp = now.strftime("%Y%m%d_%H%M%S")
-                    audio_file = os.path.join(Audio_Folder, f"{timestamp}.wav")
+                    audio_file = os.path.join(AUDIO_FOLDER, f"{timestamp}.wav")
 
                     stop_audio_event.clear()
                     try:
@@ -209,6 +233,10 @@ def start_logging():
                     GPIO.output(GREEN_LED, False)
                     GPIO.output(RED_LED, True)
                     print(f"No motion for {MIN_RECORD_SEC}s -> stopped recording")
+                    
+                    sync_with_backend(ip, images_written, audio_file)
+                    clear_folder(IMAGE_FOLDER)
+                    clear_folder(AUDIO_FOLDER)
 
             time.sleep(0.15)
 
@@ -224,5 +252,27 @@ def start_logging():
         print("Clean up")
 
 if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print(f"Usage: python3 {sys.argv[0]} <BACKEND LAPTOP IP>")
+        exit()
+   
+    ip = sys.argv[1]
+
+    # Setup GPIO
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BCM)
+   
+    # Establish pin mode for pins
+    GPIO.setup(WHITE_LED, GPIO.OUT)
+    GPIO.setup(GPIO_PIR, GPIO.IN)
+    GPIO.setup(TRIG_PIN, GPIO.OUT)
+    GPIO.setup(ECHO_PIN, GPIO.IN)
+    GPIO.setup(GREEN_LED, GPIO.OUT)
+    GPIO.setup(RED_LED, GPIO.OUT)
+
+    # Create image and audio directories
+    os.makedirs(IMAGE_FOLDER, exist_ok=True)
+    os.makedirs(AUDIO_FOLDER, exist_ok=True)
     print("Starting motion detection...")
-    start_logging()
+    
+    start_logging(ip)
