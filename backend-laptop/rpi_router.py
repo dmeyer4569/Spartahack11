@@ -9,11 +9,19 @@ from typing import List
 from datetime import date
 import os
 from stt import stt
+from gemini_api import gemini_talk_with_me
 
 rpi_router = APIRouter()
 
 
+class InsertItem(BaseModel):
+    name: str
+    expiration_date: date
+    quantity: int
+    img_path: str
+    location: int
 
+# Pure chaos... Even I'm lost :p
 
 @rpi_router.post("/rpi_upload", tags=["Select"])
 async def new_locations(
@@ -47,4 +55,27 @@ async def new_locations(
 
     result = stt(filepath_audio)
 
-    return HTTPException(status_code=status.HTTP_200_OK, detail="Successfully uploaded everything"), result
+    json_result = gemini_talk_with_me(result)
+
+    raw_location_result = await db.execute(
+        select(Location)
+        .where(Location.id == json_result.location)
+    )
+    location_in_db = raw_location_result.scalar_one_or_none()
+
+    if location_in_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Location not found")
+    
+    for item in json_result:
+        new_item = Pantry(
+            name=json_result["name"],
+            expire=json_result["expires"],
+            quantity=json_result["quantity"],
+            img_path="temp",
+            location=location_in_db
+        )
+        db.add(new_item)
+        await db.commit()
+        await db.refresh(new_item)
+
+    return HTTPException(status_code=status.HTTP_200_OK, detail="Successfully uploaded everything"), json_result

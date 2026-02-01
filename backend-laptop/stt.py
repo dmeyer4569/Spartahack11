@@ -4,7 +4,9 @@ import librosa
 import soundfile as sf
 from vosk import Model, KaldiRecognizer
 
-MODEL_PATH = "vosk-model-small-en-us-0.15"
+
+MODEL_PATH = "vosk-model-en-us-0.22"
+#MODEL_PATH = "vosk-model-small-en-us-0.15"
 
 def convert_khz(wavFile):
     converted_file = "converted_16k.wav"

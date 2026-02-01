@@ -47,3 +47,8 @@ __pycache__/
 
 # --- Other ignores ---
 notes.md
+vosk-model-small-en-us-0.15/
+vosk-model-en-us-0.22/
+uploads/
+*.wav
+*.jpg
