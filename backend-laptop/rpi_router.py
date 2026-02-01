@@ -8,6 +8,7 @@ from models import Location, Pantry
 from typing import List
 from datetime import date
 import os
+from stt import stt
 
 rpi_router = APIRouter()
 
@@ -44,4 +45,6 @@ async def new_locations(
         f.write(audio_contents)
     print(f"AudioFile saved {audio_file.filename}")
 
-    return HTTPException(status_code=status.HTTP_200_OK, detail="Successfully uploaded everything")
+    result = stt(filepath_audio)
+
+    return HTTPException(status_code=status.HTTP_200_OK, detail="Successfully uploaded everything"), result
