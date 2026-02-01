@@ -19,6 +19,8 @@ function App() {
   const [locations, setLocations] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState([]);
 
+  const foods = ["apple", "banana", "butter", "chocolate", "milk", "strawberries"];
+
   useEffect(() => {
     let hasLoaded = false;
 
@@ -36,9 +38,9 @@ function App() {
       for (let i = 0; i < 10; i++) {
         newItems.push({
           id: unique + i, 
-          name: `this city ${i}`, 
+          name: `${foods[i % 6]}`, 
           image: url, 
-          expirationDate: "2026-01-31",
+          expirationDate: `2026-02-0${((i%4)+3)}`,
           locationId: i % 3,
           quantity: 10
         });
@@ -149,7 +151,12 @@ function App() {
           </div>
 
           <aside className="lg:sticky lg:col-span-2 lg:top-2">
-            <GeminiRecipe />
+            <GeminiRecipe 
+              items={filteredItems
+                      .filter(item => item.expirationDate > priorityExpiration[Priority.Max].deadline) 
+                      .slice(0, 5)
+                    }
+            />
           </aside>
         </main>
       </div>

@@ -26,7 +26,7 @@ function Card({item, locationName}: CardProps) {
           
         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg shadow-sm flex items-center justify-center">
           <span className="text-[12px] font-bold text-blue-500 leading-none">
-           {item.quantity}x
+           {item.quantity}
           </span>
         </div>
       </div>

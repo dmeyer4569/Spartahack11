@@ -6,16 +6,24 @@ import { useState } from "react";
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 interface GeminiRecipeProps {
-  
+  items: PantryItem[]; 
 }
 
 
-export default function GeminiRecipe({}: GeminiRecipeProps) {
+export default function GeminiRecipe({items}: GeminiRecipeProps) {
   const [recipeText, setRecipeText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
  
 
-  const getRecipeSuggestion = async () => {
+  const getRecipeSuggestion = async (items: PantryItem[]) => {
+    const sortedIngredients = [...items].sort((a, b) =>
+      new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime()
+    );
+
+    const ingredientList = sortedIngredients
+      .map(item => `- ${item.name} (Expires: ${item.expirationDate})`)
+      .join("\n");
+
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
@@ -24,9 +32,7 @@ export default function GeminiRecipe({}: GeminiRecipeProps) {
       to prevent food waste.
 
       Ingredients:
-        banana - expires: 02/01/2026
-        milk - expires: 02/03/2026
-        butter - expires: 02/10/2026
+      ${ingredientList}
 
       Provide the recipe name, a brief description, and instructions.
     `;
@@ -39,7 +45,7 @@ export default function GeminiRecipe({}: GeminiRecipeProps) {
   const handleClick = async () => {
     setIsLoading(true);
     try {
-      const geminiText = await getRecipeSuggestion();
+      const geminiText = await getRecipeSuggestion(items);
       setRecipeText(geminiText);
     } catch (error) {
       console.error("Gmeini failed:", error);
@@ -54,7 +60,7 @@ export default function GeminiRecipe({}: GeminiRecipeProps) {
       <div className="bg-white rounded-[22px] p-6 h-full">
         <div className="flex items-center gap-4 mb-8">
           <div className="bg-blue-100 p-2 text-2xl rounded-lg text-blue-600"> ✨ </div>
-          <h2 className="font-black text-3xl text-slate-800 tracking-tight">Recipe Genius</h2>
+          <h2 className="font-black text-3xl text-slate-800 tracking-tight">Recipe Generator</h2>
         </div>
 
         <p className="text-slate-500 text-sm mb-6">
